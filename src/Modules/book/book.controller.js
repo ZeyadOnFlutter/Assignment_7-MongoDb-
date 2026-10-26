@@ -1,0 +1,21 @@
+import { Router } from 'express';
+import * as personService from './book.service.js';
+const router = Router();
+router.post('/collection/books', personService.createBookCollection);
+router.post('/collection/books/index', personService.createBookTitleIndex);
+router.post('/books', personService.insertOneBook);
+router.post('/books/batch', personService.insertManyBooks);
+router.patch('/books{/:title}', personService.updateBookByTitle);
+router.get('/books/title', personService.findABookWithTitle);
+router.get('/books/year', personService.findBooksByYearRange);
+router.get('/books/genre', personService.findBooksByGenre);
+router.get('/books/skip-limit', personService.findBooksWithSkipLimit);
+router.get('/books/year-integer', personService.findBooksByYearInteger);
+router.get('/books/exclude-genres', personService.findBooksExcludeGenres);
+router.delete('/books/before-year', personService.deleteBooksBefore2000);
+router.get('/books/aggregate1', personService.aggregateFilterAndSort);
+router.get('/books/aggregate2', personService.aggregateProjection);
+router.get('/books/aggregate3', personService.aggregateUnwindGenres);
+router.get('/books/aggregate4', personService.aggregateLookup);
+
+export default router;
