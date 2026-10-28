@@ -329,10 +329,13 @@ export const aggregateFilterAndSort = async (req, res) => {
 };
 export const aggregateProjection = async (req, res) => {
   try {
-    const result = await db.collection('Books').aggregate([
-      { $match: { year: { $gt: 2000 } } },
-      { $project: { _id: 0, title: 1, author: 1, year: 1 } },
-    ]).toArray();
+    const result = await db
+      .collection('Books')
+      .aggregate([
+        { $match: { year: { $gt: 2000 } } },
+        { $project: { _id: 0, title: 1, author: 1, year: 1 } },
+      ])
+      .toArray();
     return successResponse(res, 200, 'done', result);
   } catch (error) {
     throw error.cause
@@ -345,9 +348,10 @@ export const aggregateProjection = async (req, res) => {
 };
 export const aggregateUnwindGenres = async (req, res) => {
   try {
-    const result = await db.collection('Books').aggregate([
-      { $unwind: '$genres' },
-    ]).toArray();
+    const result = await db
+      .collection('Books')
+      .aggregate([{ $unwind: '$genres' }])
+      .toArray();
     return successResponse(res, 200, 'done', result);
   } catch (error) {
     throw error.cause
@@ -360,16 +364,33 @@ export const aggregateUnwindGenres = async (req, res) => {
 };
 export const aggregateLookup = async (req, res) => {
   try {
-    const result = await db.collection('Books').aggregate([
-      {
-        $lookup: {
-          from: 'logs',
-          localField: '_id',
-          foreignField: 'book_id',
-          as: 'logs',
+    const result = await db
+      .collection('logs')
+      .aggregate([
+        {
+          $addField: {
+            book_id: { $toObjectId: '$book_id' },
+          },
         },
-      },
-    ]).toArray();
+        {
+          $lookup: {
+            from: 'Books',
+            localField: 'book_id',
+            foreignField: '_id',
+            as: 'book_details',
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            action: 1,
+            'book_details.title': 1,
+            'book_details.author': 1,
+            'book_details.year': 1,
+          },
+        },
+      ])
+      .toArray();
     return successResponse(res, 200, 'done', result);
   } catch (error) {
     throw error.cause

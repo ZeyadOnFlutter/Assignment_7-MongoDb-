@@ -109,13 +109,28 @@ db.Books.aggregate([
 ])
 
 // 19. aggregate - join Books with logs collection
-db.Books.aggregate([
-  {
-    $lookup: {
-      from: "logs",
-      localField: "_id",
-      foreignField: "book_id",
-      as: "logs"
-    }
-  }
-])
+db.collection('logs').aggregate([
+        {
+          $addField: {
+            book_id: { $toObjectId: '$book_id' },
+          },
+        },
+        {
+          $lookup: {
+            from: 'Books',
+            localField: 'book_id',
+            foreignField: '_id',
+            as: 'book_details',
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            action: 1,
+            'book_details.title': 1,
+            'book_details.author': 1,
+            'book_details.year': 1,
+          },
+        },
+      ])
+      .toArray();
